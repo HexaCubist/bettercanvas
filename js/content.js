@@ -823,6 +823,24 @@ function generateDarkModeCSS() {
     return css;
 }
 
+function setDarkModeClassOnLoad(enable, doc=document) {
+    if (doc.readyState === "loading") {
+        doc.addEventListener("DOMContentLoaded", ()=> {
+            if (enable) {
+                doc.body.classList.add("bettercanvas--darkmode--enabled");
+            } else {
+                doc.body.classList.remove("bettercanvas--darkmode--enabled");
+            }
+        });
+    } else {
+        if (enable) {
+            doc.body.classList.add("bettercanvas--darkmode--enabled");
+        } else {
+            doc.body.classList.remove("bettercanvas--darkmode--enabled");
+        }
+    }      
+}
+
 let darkStyleInserted = false;
 function toggleDarkMode() {
     const css = generateDarkModeCSS();
@@ -836,11 +854,7 @@ function toggleDarkMode() {
         let style = document.querySelector("#darkcss");
         style.textContent = options.dark_mode === true || options.device_dark ? css : "";
     }
-    if (options.dark_mode === true || options.device_dark) {
-        document.body.classList.add("bettercanvas--darkmode--enabled");
-    } else {
-        document.body.classList.remove("bettercanvas--darkmode--enabled");
-    }
+    setDarkModeClassOnLoad(options.dark_mode === true || options.device_dark);
     runiframeChecker();
 }
 
@@ -892,7 +906,7 @@ function runiframeChecker() {
         document.querySelectorAll('iframe').forEach((frame) => {
             if (frame.contentDocument && frame.contentDocument.documentElement && frame.contentDocument.documentElement.querySelector('#darkcss')) {
                 frame.contentDocument.documentElement.querySelector('#darkcss').textContent = '';
-                frame.contentDocument.body.classList.remove("bettercanvas--darkmode--enabled");
+                setDarkModeClassOnLoad(false, frame.contentDocument);
             }
         });
         return;
@@ -905,7 +919,7 @@ function runiframeChecker() {
                 const new_style_element = document.createElement("style");
                 new_style_element.textContent = generateDarkModeCSS();
                 new_style_element.id = "darkcss";
-                frame.contentDocument.body.classList.add("bettercanvas--darkmode--enabled");
+                setDarkModeClassOnLoad(true, frame.contentDocument);
                 frame.contentDocument.documentElement.prepend(new_style_element);
             }
         }
